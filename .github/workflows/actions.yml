@@ -30,6 +30,10 @@ jobs:
 
       - name: execute py script
         run: python main.py
+        env:
+          CHAT_ID: ${{ secrets.CHAT_ID }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          NEWS_DB: ${{ secrets.NEWS_DB }}
           
       - name: commit files
         run: |
