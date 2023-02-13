@@ -1,8 +1,8 @@
 name: barabom cron program
 
-on: push
-  # schedule:
-  #   - cron: '0 13 * * *' # At 00:00 on Monday
+on:
+  schedule:
+    - cron: '0 7 * * *' # At 7am
 
 jobs:
   build:
