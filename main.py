@@ -184,15 +184,16 @@ def get_article(keyword, start_idx, saved_news, date_from, date_to):
 
 
 def main(keyword):
-    load_news_db = connect_news_db()
-    try:
-        saved_news = retrieve_url_col_by_keyword(keyword) # google sheet 시트 내 키워드별 기사 링크 주소 목록
-    except gspread.exceptions.APIError:
-        saved_news = None
     
     idx = 1
     today = datetime.now().strftime('%Y-%m-%d')
     while True:
+        load_news_db = connect_news_db()
+        try:
+            saved_news = retrieve_url_col_by_keyword(keyword) # google sheet 시트 내 키워드별 기사 링크 주소 목록
+        except gspread.exceptions.APIError:
+            saved_news = None
+        
         articles = get_article(keyword, idx, saved_news, date_from='2023-01-01', date_to=today)
         
         if not articles:
