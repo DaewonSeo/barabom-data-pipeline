@@ -10,7 +10,6 @@ import logging
 import logging.handlers
 
 
-
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 logger_file_handler = logging.handlers.RotatingFileHandler(
@@ -74,6 +73,7 @@ def connect_file(SHEET_FILE_URL):
     worksheet = doc.worksheet('시트1')
     return worksheet
 
+
 def connect_news_db():
     return connect_file(os.environ["NEWS_DB"])
 
@@ -84,8 +84,17 @@ def next_available_row(worksheet):
     return str(len(str_list))
 
 
+def get_all_keywords_col():
+    ws = connect_news_db()
+    return ws.get_all_values()
+
+
 def write_file(worksheet, data):
     worksheet.append_row(data)
+
+
+def retrieve_url_col_by_keyword(keyword):
+    return set([i[3] for i in get_all_keywords_col() if i[5] == keyword])
 
 
 def write_news_db(worksheet, article):
@@ -95,13 +104,15 @@ def write_news_db(worksheet, article):
         article['발행사'],
         article['링크'],
         article['요약'],
+        article['검색어'],
         ])
+
 
 def write_log_db(worksheet, timestamp, message):
     write_file(worksheet, [timestamp, message])
 
 
-def get_article(keyword, start_idx, latest_news, date_from, date_to):
+def get_article(keyword, start_idx, saved_news, date_from, date_to):
     """네이버 기사 가져오기"""
     query = f'\"{keyword}\"'
     search_date_from = date_from.replace("-", ".")
@@ -159,11 +170,11 @@ def get_article(keyword, start_idx, latest_news, date_from, date_to):
                 '발행사': publishing_company[0].text,
                 '네이버 발행': is_naver,
                 '링크': url,
-                '요약': description
+                '요약': description,
+                '검색어': keyword
             }
-            if url == latest_news: # google sheet의 최신 기사와 바교하여, 같은 경우 프로그램 종료.
+            if url in saved_news: # google sheet의 최신 기사와 바교하여, 같은 경우 프로그램 종료.
                 break
-
             results.append(article)
         else:
             logger.info('검색기간에 맞지 않는 기사이므로 저장하지 않습니다.')
@@ -172,22 +183,20 @@ def get_article(keyword, start_idx, latest_news, date_from, date_to):
     return results
 
 
-def main():
-    keyword = '제11전투비행단'
+def main(keyword):
     load_news_db = connect_news_db()
-    last_row = next_available_row(load_news_db)
     try:
-        latest_news = load_news_db.row_values(last_row)[3] # google sheet 시트 내 기사 링크 주소
+        saved_news = retrieve_url_col_by_keyword(keyword) # google sheet 시트 내 키워드별 기사 링크 주소 목록
     except gspread.exceptions.APIError:
-        latest_news = None
+        saved_news = None
     
     idx = 1
     today = datetime.now().strftime('%Y-%m-%d')
     while True:
-        articles = get_article(keyword, idx, latest_news, date_from='2023-01-01', date_to=today)
+        articles = get_article(keyword, idx, saved_news, date_from='2023-01-01', date_to=today)
         
         if not articles:
-            logger.info('더이상 검색된 뉴스결과가 없으므로, 프로그램을 종료합니다')
+            logger.info(f'{keyword} 검색어로 더이상 검색된 뉴스결과가 없으므로, 프로그램을 종료합니다')
             load_news_db.sort((2, 'asc'))
             break
         else:
@@ -202,4 +211,6 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    keywords = ['제11전투비행단', '11전비']
+    for keyword in keywords:
+        main(keyword)
