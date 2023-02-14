@@ -93,8 +93,8 @@ def write_file(worksheet, data):
     worksheet.append_row(data)
 
 
-def retrieve_url_col_by_keyword(keyword):
-    return set([i[3] for i in get_all_keywords_col() if i[5] == keyword])
+def retrieve_url_col():
+    return set([i[3] for i in get_all_keywords_col()])
 
 
 def write_news_db(worksheet, article):
@@ -190,7 +190,7 @@ def main(keyword):
     while True:
         load_news_db = connect_news_db()
         try:
-            saved_news = retrieve_url_col_by_keyword(keyword) # google sheet 시트 내 키워드별 기사 링크 주소 목록
+            saved_news = retrieve_url_col() # google sheet 시트 내 키워드별 기사 링크 주소 목록
         except gspread.exceptions.APIError:
             saved_news = None
         
