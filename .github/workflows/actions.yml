@@ -2,10 +2,10 @@ name: barabom cron program
 
 on:
   schedule:
-    - cron: '0 21-23,0-14 * * *' # At 6am to 23pm (Monitoring Working time)
+    - cron: "0 21-23,0-14 * * *" # At 6am to 23pm (Monitoring Working time)
 
 jobs:
-  build:
+  crawling:
     runs-on: ubuntu-latest
     steps:
       - name: checkout repo content
@@ -14,8 +14,8 @@ jobs:
       - name: setup python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.9' # install the python version needed
-          
+          python-version: "3.9" # install the python version needed
+
       - name: install python packages
         run: |
           python -m pip install --upgrade pip
@@ -34,14 +34,14 @@ jobs:
           CHAT_ID: ${{ secrets.CHAT_ID }}
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           NEWS_DB: ${{ secrets.NEWS_DB }}
-          
+
       - name: commit files
         run: |
           git config --local user.email "saz0549@naver.com"
           git config --local user.name "daewonseo"
           git add -A
           git diff-index --quiet HEAD || (git commit -a -m "updated logs" --allow-empty)
-          
+
       - name: push changes
         uses: ad-m/github-push-action@master
         with:
