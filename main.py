@@ -201,6 +201,7 @@ def main(keyword):
             load_news_db.sort((2, 'asc'))
             break
         else:
+            print(articles)
             logger.info(f'오류 확인 - {articles}')
             article_cnt = len(articles)
             for _ in range(article_cnt):
