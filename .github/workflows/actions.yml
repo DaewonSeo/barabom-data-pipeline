@@ -2,7 +2,7 @@ name: barabom cron program
 
 on:
   schedule:
-    - cron: "0 21-23,0-14 * * *" # At 6am to 23pm (Monitoring Working time)
+    - cron: "0 21-23,0-14/3 * * *" # At 6am to 23pm (Monitoring Working time)
 
 jobs:
   crawling:
