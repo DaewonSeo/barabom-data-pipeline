@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 from bs4 import BeautifulSoup
 from oauth2client.service_account import ServiceAccountCredentials
 import requests
+import random
 import time
 import gspread
 import telegram
@@ -27,9 +28,11 @@ SCOPE = [
     "https://www.googleapis.com/auth/drive",
     ]
 
-USER_AGENT = 'Mozilla/5.0 (Windows NT 6.3; Win64; x64)\
+USER_AGENT = ['Mozilla/5.0 (Windows NT 6.3; Win64; x64)\
     AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132\
-    Safari/537.36'
+    Safari/537.36', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_2)\
+    AppleWebKit/601.3.9 (KHTML, like Gecko) Version/9.0.2 Safari/601.3.9',
+    'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:15.0) Gecko/20100101 Firefox/15.0.1']
 
 JSON_FILE = './google.json'
 
@@ -140,11 +143,11 @@ def get_article(keyword, start_idx, saved_news, date_from, date_to):
     
     # html 요청
     base_url = 'https://search.naver.com/search.naver?'
-    req = requests.get(base_url, params=params, headers={'User-Agent': USER_AGENT})
+    req = requests.get(base_url, params=params, headers={'User-Agent': random.choice(USER_AGENT)})
 
     if req.status_code != 200:
-        print('error raised!')
-        return [], False
+        logger.error(f'The connection is not valid! - code is {req.status_code}')
+        return []
     
     # 파싱을 위한 뷰티풀 수프 객체 선언
     soup = BeautifulSoup(req.text, 'html.parser')
@@ -201,8 +204,6 @@ def main(keyword):
             load_news_db.sort((2, 'asc'))
             break
         else:
-            print(articles)
-            logger.info(f'오류 확인 - {articles}')
             article_cnt = len(articles)
             for _ in range(article_cnt):
                 article = articles.pop()
